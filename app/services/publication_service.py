@@ -7,6 +7,7 @@ from aiogram.exceptions import TelegramAPIError
 from app.bot.formatting import format_channel_post
 from app.database.models import DraftStatus
 from app.database.repositories.draft_repository import DraftRepository
+from app.errors import describe_exception
 
 logger = structlog.get_logger()
 

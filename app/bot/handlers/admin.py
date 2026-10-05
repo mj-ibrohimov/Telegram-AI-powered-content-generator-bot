@@ -19,6 +19,7 @@ from app.content.strategy import ContentStrategy
 from app.database.database import get_session
 from app.database.repositories.content_history_repository import ContentHistoryRepository
 from app.database.repositories.draft_repository import DraftRepository
+from app.errors import describe_exception
 
 logger = structlog.get_logger()
 router = Router(name="admin")
