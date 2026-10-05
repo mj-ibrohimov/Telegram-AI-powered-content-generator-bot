@@ -196,67 +196,7 @@ class OpenAIProvider(LLMProvider):
         return base64.b64decode(b64_data)
 
 
-class CodeCraftProvider(OpenAIProvider):
-    """codecraftapi.com is OpenAI-compatible for chat completions (confirmed
-    via https://codecraftapi.com/docs/chat-completions: same request/response
-    JSON shape, Bearer auth, /chat/completions path). It does NOT offer an
-    image-generation endpoint (only vision/image-input), so generate_image
-    is disabled here rather than silently hitting a 404."""
-
-    DEFAULT_BASE_URL = "https://codecraftapi.com/v1"
-
-    def __init__(self, api_key: str, model: str, base_url: str | None = None):
-        super().__init__(api_key=api_key, model=model, base_url=base_url or self.DEFAULT_BASE_URL)
-
-    async def generate_image(self, prompt: str) -> bytes:
-        raise LLMGenerationError(
-            "codecraftapi.com does not offer an image-generation endpoint. "
-            "Set LLM_PROVIDER=openai (with an OpenAI API key) to use /rasm."
-        )
-
-
 def get_llm_provider(provider_name: str, api_key: str, model: str, base_url: str | None = None) -> LLMProvider:
     if provider_name == "openai":
         return OpenAIProvider(api_key=api_key, model=model, base_url=base_url)
-    if provider_name == "codecraft":
-        return CodeCraftProvider(api_key=api_key, model=model, base_url=base_url)
     raise ValueError(f"Unknown LLM provider: {provider_name}")
-
-
-class FallbackLLMProvider(LLMProvider):
-    """Tries the primary provider first; if a call raises, retries the same
-    call once against the fallback provider before giving up. Used so a
-    backup LLM config (e.g. direct OpenAI) can be kept live without becoming
-    the default -- it only kicks in when the primary provider fails."""
-
-    def __init__(self, primary: LLMProvider, fallback: LLMProvider):
-        self.primary = primary
-        self.fallback = fallback
-
-    async def generate_post(self, context: GenerationContext) -> GeneratedPost:
-        try:
-            return await self.primary.generate_post(context)
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("primary_llm_failed_falling_back", error=describe_exception(exc))
-            return await self.fallback.generate_post(context)
-
-    async def improve_post(self, current_content: str, instruction: str, context: GenerationContext) -> GeneratedPost:
-        try:
-            return await self.primary.improve_post(current_content, instruction, context)
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("primary_llm_failed_falling_back", error=describe_exception(exc))
-            return await self.fallback.improve_post(current_content, instruction, context)
-
-    async def review_post(self, post: GeneratedPost, context: GenerationContext) -> QualityReview:
-        try:
-            return await self.primary.review_post(post, context)
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("primary_llm_review_failed_falling_back", error=describe_exception(exc))
-            return await self.fallback.review_post(post, context)
-
-    async def generate_image(self, prompt: str) -> bytes:
-        try:
-            return await self.primary.generate_image(prompt)
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("primary_llm_image_failed_falling_back", error=describe_exception(exc))
-            return await self.fallback.generate_image(prompt)

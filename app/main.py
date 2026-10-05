@@ -12,7 +12,7 @@ from aiogram.types import BotCommand
 from fastapi import FastAPI
 from sqlalchemy import select
 
-from app.ai.provider import FallbackLLMProvider, get_llm_provider
+from app.ai.provider import get_llm_provider
 from app.bot import texts
 from app.bot.handlers import admin, callbacks, drafts, start
 from app.bot.middleware.auth import AdminAuthMiddleware
@@ -86,15 +86,6 @@ async def main() -> None:
         model=settings.llm_model,
         base_url=settings.llm_base_url,
     )
-    if settings.llm_fallback_enabled:
-        fallback_provider = get_llm_provider(
-            provider_name=settings.llm_fallback_provider,
-            api_key=settings.llm_fallback_api_key,
-            model=settings.llm_fallback_model,
-            base_url=settings.llm_fallback_base_url,
-        )
-        llm_provider = FallbackLLMProvider(primary=llm_provider, fallback=fallback_provider)
-        logger.info("llm_fallback_enabled", primary=settings.llm_provider, fallback=settings.llm_fallback_provider)
 
     news_provider = WebNewsProvider(settings.news_api_key) if settings.news_enabled else NullNewsProvider()
 

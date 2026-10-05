@@ -100,39 +100,14 @@ TELEGRAM_BOT_TOKEN=your-bot-token
 TELEGRAM_CHANNEL_ID=@your_channel_or_-100...
 ADMIN_TELEGRAM_IDS=your_telegram_user_id
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/german_bot
-LLM_PROVIDER=codecraft
-LLM_API_KEY=your-codecraftapi-key
+LLM_PROVIDER=openai
+LLM_API_KEY=your-openai-api-key
 LLM_MODEL=gpt-4o-mini
 ```
 
 If `TELEGRAM_CHANNEL_ID` is a numeric ID or the channel is private, also set `TELEGRAM_CHANNEL_LINK` to a public/invite link (e.g. `https://t.me/+AbCdEf12345`) — this is what gets appended as a clickable footer on every published post. For an `@username` channel it's derived automatically and can be left blank.
 
 `.env` is gitignored — never commit real credentials.
-
-### LLM provider: codecraftapi.com + optional OpenAI backup
-
-The bot supports two independent LLM slots:
-
-- **Primary** (`LLM_PROVIDER`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_BASE_URL`) — what's used for every generation by default.
-- **Fallback** (`LLM_FALLBACK_ENABLED`, `LLM_FALLBACK_PROVIDER`, `LLM_FALLBACK_API_KEY`, `LLM_FALLBACK_MODEL`, `LLM_FALLBACK_BASE_URL`) — only used automatically if the primary call fails (e.g. rate limit, outage). Disabled by default.
-
-To use codecraftapi.com as primary and keep your original OpenAI key as a safety net:
-
-```env
-LLM_PROVIDER=codecraft
-LLM_API_KEY=your-codecraftapi-key
-LLM_MODEL=gpt-4o-mini          # confirm this is a real model on your account — see note below
-LLM_BASE_URL=                  # optional, defaults to https://codecraftapi.com/v1
-
-LLM_FALLBACK_ENABLED=true
-LLM_FALLBACK_PROVIDER=openai
-LLM_FALLBACK_API_KEY=your-openai-key
-LLM_FALLBACK_MODEL=gpt-4o-mini
-```
-
-**⚠️ Model name not verified.** codecraftapi.com's own docs (`/docs/chat-completions`) only show `claude-opus-4.8` as an example model ID — `gpt-4o-mini` is not confirmed to be one of their available models. Their `/models` catalog page (33 models) requires JavaScript to render, so it couldn't be checked automatically. **Before going live**, check `https://codecraftapi.com/models` (or `GET https://codecraftapi.com/v1/models` with your API key) and set `LLM_MODEL` to the exact string they list — otherwise every generation will fail with a model-not-found error from their API.
-
-codecraftapi.com's chat completions API is otherwise a drop-in match for OpenAI's format (confirmed from their docs: same request/response JSON, `Authorization: Bearer <key>` auth, `/chat/completions` path), so no extra code was needed beyond pointing the base URL at it. One difference: codecraftapi.com does not offer an image-generation endpoint (only image *input*/vision), so `/rasm` will fail with a clear message if `LLM_PROVIDER=codecraft` and no fallback is enabled — enable the OpenAI fallback above (or temporarily switch `LLM_PROVIDER=openai`) to use `/rasm`.
 
 ## 6. Run locally (without Docker)
 

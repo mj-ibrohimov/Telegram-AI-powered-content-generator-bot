@@ -16,21 +16,11 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "sqlite+aiosqlite:///./german_bot.db"
 
-    # LLM (primary). Set LLM_PROVIDER=codecraft to use codecraftapi.com instead
-    # of OpenAI directly -- both use the same OpenAI-compatible request format.
+    # LLM (OpenAI only)
     llm_provider: str = "openai"
     llm_api_key: str = ""
     llm_model: str = "gpt-4o-mini"
     llm_base_url: str | None = None
-
-    # LLM (backup/fallback). Kept as a separate, optional provider so the
-    # primary one above can point at codecraftapi.com without losing the
-    # original OpenAI setup. Not used automatically -- see LLM_FALLBACK_ENABLED.
-    llm_fallback_enabled: bool = False
-    llm_fallback_provider: str = "openai"
-    llm_fallback_api_key: str = ""
-    llm_fallback_model: str = "gpt-4o-mini"
-    llm_fallback_base_url: str | None = None
 
     # Scheduling
     timezone: str = "Asia/Tashkent"

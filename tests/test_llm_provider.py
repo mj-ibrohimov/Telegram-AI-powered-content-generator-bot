@@ -2,9 +2,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from app.ai.base import GeneratedPost, GenerationContext, QualityReview
-from app.ai.provider import CodeCraftProvider, FallbackLLMProvider, LLMGenerationError, OpenAIProvider, get_llm_provider
-from tests.fakes import FailingLLMProvider, FakeLLMProvider
+from app.ai.base import GeneratedPost, GenerationContext
+from app.ai.provider import LLMGenerationError, OpenAIProvider, get_llm_provider
 
 
 def test_get_llm_provider_openai():
@@ -12,63 +11,9 @@ def test_get_llm_provider_openai():
     assert provider.base_url == "https://api.openai.com/v1"
 
 
-def test_get_llm_provider_codecraft_defaults_base_url():
-    provider = get_llm_provider("codecraft", api_key="k", model="gpt-4o-mini")
-    assert isinstance(provider, CodeCraftProvider)
-    assert provider.base_url == "https://codecraftapi.com/v1"
-
-
-def test_get_llm_provider_codecraft_respects_explicit_base_url():
-    provider = get_llm_provider("codecraft", api_key="k", model="gpt-4o-mini", base_url="https://custom.example/v1")
-    assert provider.base_url == "https://custom.example/v1"
-
-
 def test_get_llm_provider_unknown_raises():
     with pytest.raises(ValueError):
         get_llm_provider("nonexistent", api_key="k", model="m")
-
-
-@pytest.mark.asyncio
-async def test_codecraft_provider_generate_image_disabled():
-    provider = CodeCraftProvider(api_key="k", model="gpt-4o-mini")
-    with pytest.raises(LLMGenerationError):
-        await provider.generate_image("a picture of Berlin")
-
-
-@pytest.mark.asyncio
-async def test_fallback_provider_uses_primary_when_it_succeeds():
-    primary = FakeLLMProvider(posts=[GeneratedPost(title="Primary", content="A" * 100)])
-    fallback = FakeLLMProvider(posts=[GeneratedPost(title="Fallback", content="B" * 100)])
-    provider = FallbackLLMProvider(primary=primary, fallback=fallback)
-
-    context = GenerationContext(scheduled_time="08:00", timezone="Asia/Tashkent", category="daily_phrases", cefr_level="Mixed")
-    post = await provider.generate_post(context)
-
-    assert post.title == "Primary"
-    assert fallback.call_count == 0
-
-
-@pytest.mark.asyncio
-async def test_fallback_provider_falls_back_when_primary_fails():
-    primary = FailingLLMProvider()
-    fallback = FakeLLMProvider(posts=[GeneratedPost(title="Fallback", content="B" * 100)])
-    provider = FallbackLLMProvider(primary=primary, fallback=fallback)
-
-    context = GenerationContext(scheduled_time="08:00", timezone="Asia/Tashkent", category="daily_phrases", cefr_level="Mixed")
-    post = await provider.generate_post(context)
-
-    assert post.title == "Fallback"
-    assert fallback.call_count == 1
-
-
-@pytest.mark.asyncio
-async def test_fallback_provider_image_falls_back():
-    primary = CodeCraftProvider(api_key="k", model="gpt-4o-mini")
-    fallback = FakeLLMProvider()
-    provider = FallbackLLMProvider(primary=primary, fallback=fallback)
-
-    image_bytes = await provider.generate_image("Oktoberfest")
-    assert image_bytes == b"fake-image-bytes"
 
 
 @pytest.mark.asyncio
