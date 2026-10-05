@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 MIN_LENGTH = 50
 MAX_LENGTH = 3000  # hard ceiling; content should normally target 500-1500
 
-ALLOWED_HTML_TAGS = {"b", "strong", "i", "em", "u", "s", "code", "pre", "a", "br"}
+ALLOWED_HTML_TAGS = {"b", "strong", "i", "em", "u", "s", "code", "pre", "a"}
 
 
 @dataclass
@@ -21,8 +21,6 @@ def _has_balanced_html_tags(content: str) -> bool:
         if tag not in ALLOWED_HTML_TAGS:
             continue
         is_closing = match.group(0).startswith("</")
-        if tag == "br":
-            continue
         if is_closing:
             if not stack or stack[-1] != tag:
                 return False

@@ -3,13 +3,20 @@ import re
 from app.bot import texts
 from app.database.models import Draft
 
-ALLOWED_TAGS = {"b", "strong", "i", "em", "u", "s", "code", "pre", "a", "br"}
+ALLOWED_TAGS = {"b", "strong", "i", "em", "u", "s", "code", "pre", "a"}
+BR_PATTERN = re.compile(r"<br\s*/?>", re.IGNORECASE)
 TAG_PATTERN = re.compile(r"</?([a-zA-Z0-9]+)(\s+[^>]*)?/?>")
 
 
 def sanitize_html(content: str) -> str:
     """Strips any HTML tags Telegram doesn't support / that aren't balanced,
-    so malformed markup never reaches the Telegram API."""
+    so malformed markup never reaches the Telegram API.
+
+    Telegram's HTML parse mode does NOT support <br> (unlike a browser) --
+    it must become a real newline instead, or Telegram rejects the whole
+    message with "Unsupported start tag br"."""
+
+    content = BR_PATTERN.sub("\n", content)
 
     def _strip_disallowed(match: re.Match) -> str:
         tag = match.group(1).lower()
@@ -23,8 +30,6 @@ def sanitize_html(content: str) -> str:
     open_stack: list[tuple[str, int]] = []
     for match in tokens:
         tag = match.group(1).lower()
-        if tag == "br":
-            continue
         is_closing = match.group(0).startswith("</")
         if is_closing:
             if open_stack and open_stack[-1][0] == tag:

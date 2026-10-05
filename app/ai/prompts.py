@@ -29,7 +29,11 @@ Do not publish anything yourself.
 You are generating a draft that must be reviewed and approved by the channel owner.
 
 Respond ONLY with a JSON object of the form:
-{"title": "<short title>", "content": "<the full post text formatted for Telegram, using HTML tags like <b> <i> for emphasis>"}
+{"title": "<short title>", "content": "<the full post text formatted for Telegram>"}
+
+For formatting inside "content", use ONLY these Telegram-supported HTML tags: <b>, <i>, <u>, <s>, <code>, <pre>, <a href="...">.
+Do NOT use <br>, <p>, <div>, <ul>, <li>, or any other HTML tag -- Telegram does not support them and the message will be rejected.
+For line breaks and paragraphs, use a plain newline character, never <br>.
 
 Keep the post between 500 and 1500 characters unless the content type genuinely requires more (e.g. challenges, quizzes).
 """
