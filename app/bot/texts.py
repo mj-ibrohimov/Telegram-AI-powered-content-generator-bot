@@ -12,6 +12,7 @@ HELP = (
     "<b>Mavjud buyruqlar</b>\n\n"
     "/holat — bot, rejalashtiruvchi va bazaning holati\n"
     "/yarat [kategoriya] — qo'lda yangi post yaratish\n"
+    "/daraja — CEFR darajasi (A1-C2) va mavzuni tugmalar orqali tanlab post yaratish\n"
     "/erkin — o'zingiz xohlagan matn (prompt) bo'yicha post yaratish\n"
     "/rasm — o'zingiz xohlagan tavsif bo'yicha AI rasm yaratish\n"
     "/jadval — bugungi post yaratish vaqtlari\n"
@@ -46,6 +47,9 @@ SETTINGS_TEMPLATE = (
 
 HISTORY_EMPTY = "Hozircha chop etilgan postlar yo'q."
 HISTORY_HEADER = "<b>So'nggi chop etilgan postlar</b>\n\n"
+
+DARAJA_PICK_LEVEL = "📊 Qaysi CEFR darajasida post yaratay?"
+DARAJA_PICK_CATEGORY = "✅ {level} darajasi tanlandi.\n\nEndi mavzuni tanlang:"
 
 GENERATING = "🔄 Yangi qoralama tayyorlanmoqda..."
 GENERATION_FAILED_MANUAL = "⚠️ To'g'ri post yarata olmadim.\n\nSabab: {reason}"
@@ -118,6 +122,7 @@ BTN_DISCARD = "❌ Bekor qilib qayta yaratish"
 CATEGORY_LABELS = {
     "daily_phrases": "Kundalik nemischa",
     "vocabulary": "Lug'at",
+    "travel": "Sayohat uchun nemischa",
     "workplace": "Ish joyida nemischa",
     "grammar": "Grammatika",
     "mistakes": "Umumiy xatolar",
@@ -142,6 +147,7 @@ BOT_COMMANDS: list[tuple[str, str]] = [
     ("yordam", "Yordam va buyruqlar ro'yxati"),
     ("holat", "Bot va tizim holatini ko'rish"),
     ("yarat", "Yangi post yaratish (kategoriya tanlab)"),
+    ("daraja", "CEFR darajasi va mavzuni tanlab post yaratish"),
     ("erkin", "Erkin matn (prompt) bo'yicha post yaratish"),
     ("rasm", "AI yordamida rasm yaratish"),
     ("jadval", "Bugungi post yaratish vaqtlari"),

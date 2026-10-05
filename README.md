@@ -176,6 +176,8 @@ The bot's UI and all commands are in Uzbek. Typing `/` in the chat with the bot 
 
 The bot generates a draft immediately and sends it with the approval buttons.
 
+For a button-driven picker instead of typing category names, use `/daraja` — it shows inline buttons for CEFR level (A1-C2), then category buttons (Kundalik/Korporativ/Sayohat/Istalgan mavzu for daily/workplace/travel/random).
+
 You can also skip categories entirely and just describe what you want:
 
 ```

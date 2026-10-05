@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 from app.bot import texts
 from app.bot.formatting import format_draft_message
 from app.bot.keyboards.approval import approval_keyboard
+from app.bot.keyboards.daraja import cefr_level_keyboard
 from app.bot.states.improvement import FreeformStates, ImageStates
 from app.config import Settings
 from app.content.duplicate_detector import DuplicateDetector
@@ -27,6 +28,7 @@ router = Router(name="admin")
 VALID_CATEGORIES = {
     "daily_phrases",
     "vocabulary",
+    "travel",
     "workplace",
     "grammar",
     "mistakes",
@@ -40,6 +42,52 @@ VALID_CATEGORIES = {
     "marketing",
 }
 VALID_CEFR = {"A1", "A2", "B1", "B2", "C1", "C2", "Mixed"}
+
+
+async def _generate_and_send(
+    message: Message,
+    settings: Settings,
+    llm_provider,
+    news_provider,
+    cefr_level: str,
+    category_override: str | None,
+) -> None:
+    tz = ZoneInfo(settings.timezone)
+    now_str = datetime.now(tz).strftime("%H:%M")
+
+    async with get_session() as session:
+        draft_repo = DraftRepository(session)
+        history_repo = ContentHistoryRepository(session)
+        strategy = ContentStrategy(marketing_ratio=settings.promotional_post_ratio, news_enabled=settings.news_enabled)
+        duplicate_detector = DuplicateDetector(settings.duplicate_similarity_threshold)
+        generator = ContentGenerator(
+            llm=llm_provider,
+            strategy=strategy,
+            duplicate_detector=duplicate_detector,
+            draft_repo=draft_repo,
+            history_repo=history_repo,
+            news_provider=news_provider,
+            max_attempts=settings.max_generation_attempts,
+        )
+
+        try:
+            draft = await generator.generate(
+                scheduled_for=f"manual_{datetime.now(tz).strftime('%Y%m%d%H%M%S')}",
+                scheduled_time=now_str,
+                timezone=settings.timezone,
+                cefr_level=cefr_level,
+                category_override=category_override,
+            )
+        except GenerationFailedError as exc:
+            logger.error("manual_generation_failed", error=describe_exception(exc))
+            await message.answer(texts.GENERATION_FAILED_MANUAL.format(reason=exc))
+            return
+
+    await message.answer(
+        format_draft_message(draft, settings.channel_link),
+        reply_markup=approval_keyboard(draft.id),
+        parse_mode="HTML",
+    )
 
 
 @router.message(Command("holat"))
@@ -128,43 +176,12 @@ async def cmd_generate(message: Message, settings: Settings, llm_provider, news_
             cefr_level = part
 
     await message.answer(texts.GENERATING)
+    await _generate_and_send(message, settings, llm_provider, news_provider, cefr_level, category_override)
 
-    tz = ZoneInfo(settings.timezone)
-    now_str = datetime.now(tz).strftime("%H:%M")
 
-    async with get_session() as session:
-        draft_repo = DraftRepository(session)
-        history_repo = ContentHistoryRepository(session)
-        strategy = ContentStrategy(marketing_ratio=settings.promotional_post_ratio, news_enabled=settings.news_enabled)
-        duplicate_detector = DuplicateDetector(settings.duplicate_similarity_threshold)
-        generator = ContentGenerator(
-            llm=llm_provider,
-            strategy=strategy,
-            duplicate_detector=duplicate_detector,
-            draft_repo=draft_repo,
-            history_repo=history_repo,
-            news_provider=news_provider,
-            max_attempts=settings.max_generation_attempts,
-        )
-
-        try:
-            draft = await generator.generate(
-                scheduled_for=f"manual_{datetime.now(tz).strftime('%Y%m%d%H%M%S')}",
-                scheduled_time=now_str,
-                timezone=settings.timezone,
-                cefr_level=cefr_level,
-                category_override=category_override,
-            )
-        except GenerationFailedError as exc:
-            logger.error("manual_generation_failed", error=describe_exception(exc))
-            await message.answer(texts.GENERATION_FAILED_MANUAL.format(reason=exc))
-            return
-
-    await message.answer(
-        format_draft_message(draft, settings.channel_link),
-        reply_markup=approval_keyboard(draft.id),
-        parse_mode="HTML",
-    )
+@router.message(Command("daraja"))
+async def cmd_daraja(message: Message) -> None:
+    await message.answer(texts.DARAJA_PICK_LEVEL, reply_markup=cefr_level_keyboard())
 
 
 @router.message(Command("erkin"))

@@ -10,6 +10,15 @@ Use natural German.
 
 When Uzbek explanations are useful, provide clear and natural Uzbek.
 
+Do NOT add a redundant explanation line under a phrase when the Uzbek translation already conveys the meaning. \
+A translation IS the explanation -- only add an extra note when it tells the learner something the translation \
+alone cannot (e.g. a grammar quirk, a register/formality warning, a false-friend trap, or a non-obvious usage \
+context). If you have nothing genuinely new to say, say nothing. Prefer fewer, denser phrases with a real example \
+sentence over more phrases padded with filler commentary.
+
+Avoid generic filler phrasing ("bu ibora juda foydali", "bu holatlarda ishlatiladi", "kundalik hayotda yordam \
+beradi") -- it adds length without adding information. Cut it.
+
 Adapt content to the requested CEFR level.
 
 Avoid repetitive content.
@@ -39,9 +48,10 @@ Keep the post between 500 and 1500 characters unless the content type genuinely 
 """
 
 CATEGORY_GUIDANCE = {
-    "daily_phrases": "Create 5 useful everyday German phrases with Uzbek translations, a category known as 'Daily German'.",
-    "vocabulary": "Create vocabulary grouped by a specific topic (travel, food, work, university, shopping, healthcare, housing, relationships, daily life, or bureaucracy) with Uzbek meanings.",
-    "workplace": "Create workplace German content: office vocabulary, job interviews, emails, meetings, presentations, or professional phrases, with Uzbek explanation.",
+    "daily_phrases": "Create 5 useful everyday German phrases with Uzbek translations, a category known as 'Daily German'. Just the phrase and its Uzbek translation is enough for most entries -- only add a short extra line if there's a genuine usage nuance (e.g. formal vs informal, a common mistake, a grammar note) worth knowing.",
+    "vocabulary": "Create vocabulary grouped by a specific topic (food, university, shopping, healthcare, housing, relationships, daily life, or bureaucracy) with Uzbek meanings.",
+    "travel": "Create practical German phrases/vocabulary for travel: airport, train station, hotel check-in, asking for directions, buying tickets, ordering at a restaurant while traveling. Just the phrase and its Uzbek translation is enough for most entries -- only add an extra line for a genuine usage nuance.",
+    "workplace": "Create workplace/corporate German content: office vocabulary, job interviews, emails, meetings, presentations, or professional phrases, with Uzbek explanation. Just the phrase and its Uzbek translation is enough for most entries -- only add an extra line for a genuine usage nuance.",
     "grammar": "Create a short, non-academic grammar explanation (e.g. Akkusativ vs Dativ, der/die/das, Perfekt, Präteritum, Konjunktiv II, weil/dass, word order, separable verbs, modal verbs) with examples.",
     "mistakes": "Create a 'Common Mistakes' post showing an incorrect sentence (❌) and the correct one (✅) with a brief Uzbek explanation of why.",
     "comparison": "Explain a difference between German and Uzbek (or Russian/English where relevant) grammar or usage. Do not invent similarities that do not exist.",
@@ -68,6 +78,10 @@ Check the draft against ALL of the following criteria:
 7. Category adherence -- does the content match what was requested for this category?
 8. Factual accuracy -- are there any invented facts, fake statistics, fabricated sources, or incorrect claims \
 about Germany, German culture, or the German language?
+9. Density/padding -- does most of the post consist of redundant explanation lines that just restate what the \
+Uzbek translation already said, or generic filler ("bu ibora foydali", "kundalik hayotda ishlatiladi") that adds \
+no real information? Flag this as a major issue under field "usefulness" only if it's the dominant pattern \
+across the post (most phrases padded, not just one). A single phrase with a slightly loose extra note is minor.
 
 Respond ONLY with a JSON object of this exact form:
 {
@@ -87,7 +101,14 @@ do not make it invalid, but should still be listed.
 - Only set "fix_instruction" when there is at least one major issue -- it must be specific enough that a \
 rewrite following it would resolve every major issue, and should NOT ask for unrelated changes.
 - Do not invent problems that aren't there. An empty "issues" list is expected and good for a clean draft.
-- Be strict about factual_accuracy and translation_accuracy in particular -- these directly harm learners if wrong.
+- Be strict about factual_accuracy in particular -- fabricated facts/sources/statistics are always major.
+- For translation_accuracy, only mark "major" when the translation would genuinely mislead a learner about \
+what the German phrase means or when to use it (wrong meaning, wrong register entirely, a false friend). \
+A translation that captures the correct meaning but uses a slightly different grammatical mood, tense, or \
+politeness level than the "ideal" rendering (e.g. simple present instead of a subjunctive/conditional nuance) \
+is a MINOR issue, not major -- Uzbek and German don't map 1:1 in mood/aspect, and a learner is not misled by this.
+- You are a reviewer, not a perfectionist editor. Approve content that is correct and useful even if a better \
+phrasing exists. Reserve "major" for mistakes that would actually teach the learner something wrong.
 """
 
 REVIEW_USER_TEMPLATE = """Category: {category}

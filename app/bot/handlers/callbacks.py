@@ -7,7 +7,9 @@ from zoneinfo import ZoneInfo
 
 from app.bot import texts
 from app.bot.formatting import format_draft_message, format_published_message
+from app.bot.handlers.admin import VALID_CEFR, _generate_and_send
 from app.bot.keyboards.approval import approval_keyboard
+from app.bot.keyboards.daraja import daraja_category_keyboard
 from app.bot.states.improvement import ImprovementStates
 from app.config import Settings
 from app.content.duplicate_detector import DuplicateDetector
@@ -142,3 +144,31 @@ async def on_improve(callback: CallbackQuery, state: FSMContext) -> None:
 
     await callback.message.answer(texts.IMPROVE_PROMPT)
     await callback.answer()
+
+
+@router.callback_query(lambda c: c.data and c.data.startswith("daraja_level:"))
+async def on_daraja_level(callback: CallbackQuery) -> None:
+    level = callback.data.split(":", 1)[1]
+    if level not in VALID_CEFR:
+        await callback.answer(texts.INVALID_REQUEST, show_alert=True)
+        return
+
+    await callback.message.edit_text(
+        texts.DARAJA_PICK_CATEGORY.format(level=level),
+        reply_markup=daraja_category_keyboard(level),
+    )
+    await callback.answer()
+
+
+@router.callback_query(lambda c: c.data and c.data.startswith("daraja_cat:"))
+async def on_daraja_category(callback: CallbackQuery, settings: Settings, llm_provider, news_provider) -> None:
+    _, level, category = callback.data.split(":", 2)
+    if level not in VALID_CEFR:
+        await callback.answer(texts.INVALID_REQUEST, show_alert=True)
+        return
+
+    await callback.message.edit_text(texts.GENERATING)
+    await callback.answer()
+    await _generate_and_send(
+        callback.message, settings, llm_provider, news_provider, level, category or None
+    )
