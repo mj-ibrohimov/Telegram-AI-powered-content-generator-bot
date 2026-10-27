@@ -18,6 +18,7 @@ from app.database.database import get_session
 from app.database.repositories.content_history_repository import ContentHistoryRepository
 from app.database.repositories.draft_repository import DraftRepository
 from app.database.repositories.scheduler_repository import SchedulerRepository
+from app.database.repositories.settings_repository import SettingsRepository
 
 logger = structlog.get_logger()
 
@@ -38,6 +39,11 @@ async def run_scheduled_generation(
     slot_id = get_slot_id(scheduled_time, now)
 
     async with get_session() as session:
+        settings_repo = SettingsRepository(session)
+        if not await settings_repo.is_auto_posting_enabled():
+            logger.info("scheduler_slot_skipped_auto_posting_disabled", slot_id=slot_id)
+            return
+
         scheduler_repo = SchedulerRepository(session)
 
         if await scheduler_repo.already_processed(slot_id):

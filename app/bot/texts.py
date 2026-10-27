@@ -15,6 +15,7 @@ HELP = (
     "/daraja — CEFR darajasi (A1-C2) va mavzuni tugmalar orqali tanlab post yaratish\n"
     "/erkin — o'zingiz xohlagan matn (prompt) bo'yicha post yaratish\n"
     "/rasm — o'zingiz xohlagan tavsif bo'yicha AI rasm yaratish\n"
+    "/avtomatik — kunlik avtomatik postlashni yoqish/o'chirish\n"
     "/jadval — bugungi post yaratish vaqtlari\n"
     "/tarix — so'nggi chop etilgan postlar\n"
     "/sozlamalar — joriy sozlamalarni ko'rish\n\n"
@@ -26,6 +27,7 @@ STATUS_TEMPLATE = (
     "<b>Bot holati</b>\n\n"
     "Bot: Ishlayapti\n"
     "Rejalashtiruvchi: {scheduler_state}\n"
+    "Avtomatik postlash: {auto_posting_state}\n"
     "Keyingi generatsiya: {next_run}\n"
     "Kanal: {channel}\n"
     "Baza: {db_state}"
@@ -50,6 +52,28 @@ HISTORY_HEADER = "<b>So'nggi chop etilgan postlar</b>\n\n"
 
 DARAJA_PICK_LEVEL = "📊 Qaysi CEFR darajasida post yaratay?"
 DARAJA_PICK_CATEGORY = "✅ {level} darajasi tanlandi.\n\nEndi mavzuni tanlang:"
+
+AUTO_POSTING_STATUS = (
+    "🔄 <b>Avtomatik postlash</b>\n\n"
+    "Holati: {status}\n\n"
+    "Yoqilgan bo'lsa, bot har kuni belgilangan vaqtlarda ({post_times}) avtomatik post tayyorlab, "
+    "tasdiqlash uchun yuboradi. O'chirilganda bu to'xtaydi va AI so'rovlari (token) sarflanmaydi — "
+    "/yarat, /daraja va /erkin baribir qo'lda ishlaydi."
+)
+AUTO_POSTING_ON = "✅ Yoqilgan"
+AUTO_POSTING_OFF = "⛔ O'chirilgan"
+BTN_AUTO_POSTING_TURN_OFF = "⛔ O'chirish"
+BTN_AUTO_POSTING_TURN_ON = "✅ Yoqish"
+AUTO_POSTING_ENABLED_CONFIRM = "✅ Avtomatik postlash yoqildi. Belgilangan vaqtlarda postlar tayyorlanadi."
+AUTO_POSTING_DISABLED_CONFIRM = (
+    "⛔ Avtomatik postlash o'chirildi. Endi rejalashtirilgan vaqtlarda AI so'rovlari yuborilmaydi.\n\n"
+    "Qo'lda post yaratish uchun /yarat, /daraja yoki /erkin dan foydalanishingiz mumkin."
+)
+
+YARAT_PICK_TOPIC = "📝 Qanday mavzuda post yarataylik?"
+BTN_YARAT_RANDOM = "🎲 Tasodifiy"
+BTN_YARAT_OTHER = "✍️ Boshqa (o'zim yozaman)"
+YARAT_OTHER_PROMPT_ASK = "✍️ Qaysi mavzuda post yaratishimni xohlaysiz? Matn ko'rinishida yozing."
 
 GENERATING = "🔄 Yangi qoralama tayyorlanmoqda..."
 GENERATION_FAILED_MANUAL = "⚠️ To'g'ri post yarata olmadim.\n\nSabab: {reason}"
@@ -150,6 +174,7 @@ BOT_COMMANDS: list[tuple[str, str]] = [
     ("daraja", "CEFR darajasi va mavzuni tanlab post yaratish"),
     ("erkin", "Erkin matn (prompt) bo'yicha post yaratish"),
     ("rasm", "AI yordamida rasm yaratish"),
+    ("avtomatik", "Kunlik avtomatik postlashni yoqish/o'chirish"),
     ("jadval", "Bugungi post yaratish vaqtlari"),
     ("tarix", "So'nggi chop etilgan postlar"),
     ("sozlamalar", "Joriy sozlamalarni ko'rish"),

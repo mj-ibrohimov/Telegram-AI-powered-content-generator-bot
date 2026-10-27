@@ -11,7 +11,9 @@ from zoneinfo import ZoneInfo
 from app.bot import texts
 from app.bot.formatting import format_draft_message
 from app.bot.keyboards.approval import approval_keyboard
+from app.bot.keyboards.auto_posting import auto_posting_keyboard
 from app.bot.keyboards.daraja import cefr_level_keyboard
+from app.bot.keyboards.yarat_topic import yarat_topic_keyboard
 from app.bot.states.improvement import FreeformStates, ImageStates
 from app.config import Settings
 from app.content.duplicate_detector import DuplicateDetector
@@ -20,6 +22,7 @@ from app.content.strategy import ContentStrategy
 from app.database.database import get_session
 from app.database.repositories.content_history_repository import ContentHistoryRepository
 from app.database.repositories.draft_repository import DraftRepository
+from app.database.repositories.settings_repository import SettingsRepository
 from app.errors import describe_exception
 
 logger = structlog.get_logger()
@@ -93,9 +96,11 @@ async def _generate_and_send(
 @router.message(Command("holat"))
 async def cmd_status(message: Message, settings: Settings, scheduler) -> None:
     db_ok = True
+    auto_posting_enabled = True
     try:
         async with get_session() as session:
             await session.execute(select(1))
+            auto_posting_enabled = await SettingsRepository(session).is_auto_posting_enabled()
     except Exception:  # noqa: BLE001
         db_ok = False
 
@@ -108,6 +113,7 @@ async def cmd_status(message: Message, settings: Settings, scheduler) -> None:
     await message.answer(
         texts.STATUS_TEMPLATE.format(
             scheduler_state="Ishlayapti" if scheduler else "Ishlamayapti",
+            auto_posting_state=texts.AUTO_POSTING_ON if auto_posting_enabled else texts.AUTO_POSTING_OFF,
             next_run=next_run or "noma'lum",
             channel=settings.telegram_channel_id,
             db_state="Ulangan" if db_ok else "XATO",
@@ -166,6 +172,11 @@ async def cmd_history(message: Message) -> None:
 @router.message(Command("yarat"))
 async def cmd_generate(message: Message, settings: Settings, llm_provider, news_provider) -> None:
     parts = (message.text or "").split()[1:]
+
+    if not parts:
+        await message.answer(texts.YARAT_PICK_TOPIC, reply_markup=yarat_topic_keyboard())
+        return
+
     category_override = None
     cefr_level = settings.default_cefr_level
 
@@ -188,6 +199,21 @@ async def cmd_daraja(message: Message) -> None:
 async def cmd_freeform(message: Message, state: FSMContext) -> None:
     await state.set_state(FreeformStates.WAITING_FOR_PROMPT)
     await message.answer(texts.FREEFORM_PROMPT_ASK)
+
+
+@router.message(Command("avtomatik"))
+async def cmd_auto_posting(message: Message, settings: Settings) -> None:
+    async with get_session() as session:
+        enabled = await SettingsRepository(session).is_auto_posting_enabled()
+
+    await message.answer(
+        texts.AUTO_POSTING_STATUS.format(
+            status=texts.AUTO_POSTING_ON if enabled else texts.AUTO_POSTING_OFF,
+            post_times=settings.post_times,
+        ),
+        reply_markup=auto_posting_keyboard(enabled),
+        parse_mode="HTML",
+    )
 
 
 @router.message(Command("rasm"))

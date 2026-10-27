@@ -114,3 +114,17 @@ class CategoryUsage(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     category: Mapped[str] = mapped_column(String(64), index=True)
     used_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class BotSetting(Base):
+    """Small persistent key-value store for runtime toggles (e.g. whether the
+    scheduler auto-generates) that must survive restarts without a schema
+    migration for every new flag."""
+
+    __tablename__ = "bot_settings"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[str] = mapped_column(String(255))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )

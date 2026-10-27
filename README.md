@@ -174,7 +174,7 @@ The bot's UI and all commands are in Uzbek. Typing `/` in the chat with the bot 
 /yarat quiz
 ```
 
-The bot generates a draft immediately and sends it with the approval buttons.
+Typing `/yarat` with no arguments shows an inline topic picker instead: 🎲 Tasodifiy (random), a few quick topics (Kundalik/Grammatika/Ish joyida/Sayohat), and ✍️ Boshqa (type your own topic as free text). Any of these generates a draft immediately and sends it with the approval buttons.
 
 For a button-driven picker instead of typing category names, use `/daraja` — it shows inline buttons for CEFR level (A1-C2), then category buttons (Kundalik/Korporativ/Sayohat/Istalgan mavzu for daily/workplace/travel/random).
 
@@ -191,6 +191,10 @@ To generate a standalone AI image (not attached to a post):
 /rasm
 ```
 then reply with an image description, e.g. "Oktoberfest bayrami, chizilgan uslubda".
+
+### Pausing automatic daily posting
+
+`/avtomatik` shows the current state and a toggle button. When turned off, the scheduler skips every scheduled slot without calling the AI at all (saves tokens/cost) — `/yarat`, `/daraja`, and `/erkin` keep working normally regardless of this setting, since it only affects the automatic schedule. The setting is stored in the database (`bot_settings` table) and survives restarts.
 
 ## 11. Deploy to a cloud server
 
