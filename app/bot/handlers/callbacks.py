@@ -198,7 +198,7 @@ async def on_yarat_topic(callback: CallbackQuery, state: FSMContext, settings: S
 
 
 @router.callback_query(lambda c: c.data and c.data.startswith("auto_posting:"))
-async def on_auto_posting_toggle(callback: CallbackQuery, settings: Settings) -> None:
+async def on_auto_posting_toggle(callback: CallbackQuery, bot: Bot, settings: Settings) -> None:
     action = callback.data.split(":", 1)[1]
     if action not in ("on", "off"):
         await callback.answer(texts.INVALID_REQUEST, show_alert=True)
@@ -217,4 +217,19 @@ async def on_auto_posting_toggle(callback: CallbackQuery, settings: Settings) ->
         reply_markup=auto_posting_keyboard(enabled),
         parse_mode="HTML",
     )
+
+    actor_id = callback.from_user.id
+    actor_name = callback.from_user.full_name or str(actor_id)
+    status_label = texts.AUTO_POSTING_ON if enabled else texts.AUTO_POSTING_OFF
+    for admin_id in settings.admin_ids:
+        if admin_id == actor_id:
+            continue
+        try:
+            await bot.send_message(
+                chat_id=admin_id,
+                text=texts.AUTO_POSTING_CHANGED_BY_OTHER.format(admin_name=actor_name, status=status_label),
+                parse_mode="HTML",
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("auto_posting_notify_failed", admin_id=admin_id, error=describe_exception(exc))
     await callback.answer(confirm_text, show_alert=True)

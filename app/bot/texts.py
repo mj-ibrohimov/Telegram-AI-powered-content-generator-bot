@@ -69,6 +69,9 @@ AUTO_POSTING_DISABLED_CONFIRM = (
     "⛔ Avtomatik postlash o'chirildi. Endi rejalashtirilgan vaqtlarda AI so'rovlari yuborilmaydi.\n\n"
     "Qo'lda post yaratish uchun /yarat, /daraja yoki /erkin dan foydalanishingiz mumkin."
 )
+AUTO_POSTING_CHANGED_BY_OTHER = (
+    "ℹ️ {admin_name} tomonidan avtomatik postlash {status} holatiga o'tkazildi."
+)
 
 YARAT_PICK_TOPIC = "📝 Qanday mavzuda post yarataylik?"
 BTN_YARAT_RANDOM = "🎲 Tasodifiy"
